@@ -1,0 +1,973 @@
+---
+title: "Statistical analysis of global IPUMS data on migration and health workers"
+author: Gilles Guillot
+date: "Last knitted on `r paste(system('hostname',intern=TRUE), ',' , format(Sys.time(), '%Y-%m-%d at %X'))`"
+# output: pdf_document
+# includes:
+#    in_header: "preamble.tex"
+# fontsize: 10pt    
+output:
+  html_document:
+    toc: true
+    number_sections: true
+---
+
+```{r global kntting options, include=FALSE}
+knitr::opts_chunk$set(message=FALSE,warning=FALSE)
+```
+
+```{r load packages data and functions}
+if(!require('pacman')) install.packages('pacman')
+library(pacman)
+p_load( tidyverse ,
+        kableExtra ,
+        readxl,
+       # gt ,
+       # htmlTable ,
+       magrittr,
+        reshape2 ,
+        wesanderson )
+
+# .Rdat file loaded next line was produced by ./format.R
+load('~/Dropbox/Work/WHO/SHARED/IPUMS/Data/Formatted/AllHWF-Data_Formatted.Rdat')
+# load('~/Dropbox/Work/WHO/SHARED/IPUMS/Data/Formatted/SubHWF-Data_Formatted.Rdat')
+
+source("~/Dropbox/Work/WHO/SHARED/IPUMS/R/tasks/EDA_inmig.R")
+
+load('~/Dropbox/Work/WHO/SHARED/IPUMS/Data/Formatted/counpop.Rdat')
+# counpop = read.table("~/Dropbox/Work/WHO/SHARED/IPUMS/Data/Formatted¨Country_pop_World_Bank.csv.txt",
+#                      sep=";",header=TRUE,skip = 2)
+
+# load HRH costs data 
+med_cost = read_excel("~/Dropbox/Work/WHO/SHARED/IPUMS/Data/misc_data/Salaries for HRH Costing - 2 Sept 2020.xlsx")
+med_cost = med_cost %>% mutate(country = Country) %>% select(country,Professionals,Nurses,`Patient Support`)
+# check country names
+# unique(dat$country)[ !unique(dat$country) %in% med_cost$country ]
+med_cost$country[med_cost$country=="United States of America"] = "United States"
+
+
+# load IMF GDP data
+gdp = read.csv("~/Dropbox/Work/WHO/SHARED/IPUMS/Data/misc_data/GDP_IMF.csv",
+               sep="\t", 
+               header=TRUE,
+               skip = 1,
+               check.names = FALSE)
+gdp = gdp %>% select(country,`2010`)
+gdp$GDP2010_MUSD = gdp$`2010`  
+gdp = gdp %>% select(-`2010`)
+gdp$country = gdp$country %>% str_sub(2)
+```
+
+# Inward migration population sizes by country
+
+```{r}
+res = dat %>%   group_by(country) %>%
+  summarise(TotWF = sum(perwt),
+            InMigWF_comp = sum(perwt * (mig=="mig")),
+            regionw.ord = first(regionw.ord)) %>%
+  mutate(PctMigWF_comp = 100*InMigWF_comp/TotWF) %>% 
+  arrange(PctMigWF_comp) %>% 
+  mutate(country = factor(country,
+                          levels=country,ordered = TRUE))
+
+res %>% kable(caption="Inward migration population size",align = "c",digits=1) %>% 
+  kable_styling(full_width = F) 
+
+ggplot() + 
+  geom_col(data = res, 
+           aes(y=country,
+               x=PctMigWF_comp,
+               fill = regionw.ord),
+           width = 0.5, position = position_dodge(0.7)) + 
+  labs(title="Percentage of migrants in local health work force") + 
+  xlab("")
+```
+
+# Detailed analysis by country
+
+## Africa
+
+### Egypt
+
+```{r,results='asis'}
+EDA_inmig(dat,"Egypt")
+```
+
+### Mali
+
+```{r,results='asis'}
+EDA_inmig(dat,"Mali")
+```
+
+### Benin
+
+```{r,results='asis'}
+EDA_inmig(dat,"Benin")
+```
+
+### Zambia
+
+```{r,results='asis'}
+EDA_inmig(dat,"Zambia")
+```
+
+### Malawi
+
+```{r,results='asis'}
+EDA_inmig(dat,"Malawi")
+```
+
+### Mozambique
+
+```{r,results='asis'}
+EDA_inmig(dat,"Mozambique")
+```
+
+### Zimbabwe
+
+```{r,results='asis'}
+EDA_inmig(dat,"Zimbabwe")
+```
+
+### Botswana
+
+```{r,results='asis'}
+EDA_inmig(dat,"Botswana")
+```
+
+
+### South Africa
+
+```{r,results='asis'}
+EDA_inmig(dat,"South Africa")
+```
+
+\clearpage
+
+## United States
+
+```{r,results='asis'}
+EDA_inmig(dat,"United States")
+```
+
+\clearpage
+
+## Central and South America
+
+### Puerto Rico
+
+```{r,results='asis'}
+EDA_inmig(dat,"Puerto Rico")
+```
+
+\clearpage
+
+### Mexico
+
+```{r,results='asis'}
+EDA_inmig(dat,"Mexico")
+```
+
+### El Salvador
+
+```{r,results='asis'}
+EDA_inmig(dat,"El Salvador")
+```
+
+### Panama
+
+```{r,results='asis'}
+EDA_inmig(dat,"Panama")
+```
+
+### Ecuador
+
+```{r,results='asis'}
+EDA_inmig(dat,"Ecuador")
+```
+
+### Peru
+
+```{r,results='asis'}
+EDA_inmig(dat,"Peru")
+```
+
+### Brazil
+
+```{r,results='asis'}
+EDA_inmig(dat,"Brazil")
+```
+
+### Uruguay
+
+```{r,results='asis'}
+EDA_inmig(dat,"Uruguay")
+```
+
+## Asia - Oceania
+
+
+### Fiji
+
+```{r,results='asis'}
+EDA_inmig(dat,"Fiji")
+```
+
+### Philippines
+
+```{r,results='asis'}
+EDA_inmig(dat,"Philippines")
+```
+
+### Cambodia
+
+```{r,results='asis'}
+EDA_inmig(dat,"Cambodia")
+```
+
+### Iran
+
+```{r,results='asis'}
+EDA_inmig(dat,"Iran")
+```
+
+
+
+\clearpage
+
+## Europe
+
+### Armenia
+
+```{r,results='asis'}
+EDA_inmig(dat,"Armenia")
+```
+
+### Belarus
+
+```{r,results='asis'}
+EDA_inmig(dat,"Belarus")
+```
+
+### France
+
+```{r,results='asis'}
+EDA_inmig(dat,"France")
+```
+
+### Greece
+
+```{r,results='asis'}
+EDA_inmig(dat,"Greece")
+```
+
+### Ireland
+
+```{r,results='asis'}
+EDA_inmig(dat,"Ireland")
+```
+
+### Portugal
+
+```{r,results='asis'}
+EDA_inmig(dat,"Portugal")
+```
+
+
+### Romania
+
+```{r,results='asis'}
+EDA_inmig(dat,"Romania")
+```
+
+\clearpage
+
+# Outward migration by country
+
+```{r, message=FALSE}
+################
+## Building a table with flow from origins to destinations
+
+{
+  cy = "ARM2011"
+  sumperwt = sum(dat$perwt[dat$countryyear==cy] )
+  TotWF = dat %>% filter(countryyear == cy) %>%
+    group_by(bplcountry) %>%
+    summarise(TotWF = sum(perwt) )
+  PctWF = TotWF %>% 
+    mutate(PctWF = 100* TotWF / sumperwt) %>% 
+    select(-TotWF)
+  colnames(TotWF)[2] = cy
+  colnames(PctWF)[2] = cy
+  
+  for(i in 2:length(sort(unique(dat$countryyear))) )
+  {
+    cy = sort(unique(dat$countryyear))[i]
+    sumperwt = sum(dat$perwt[dat$countryyear==cy] )
+    tmp1 = dat %>% filter(countryyear == cy) %>%
+      group_by(bplcountry) %>%
+      summarise(TotWF = sum(perwt) ) 
+    tmp2 = tmp1 %>%  mutate(PctWF = 100* TotWF / sumperwt) %>% 
+      select(-TotWF)
+    colnames(tmp1)[2] = cy
+    colnames(tmp2)[2] = cy
+    
+    TotWF =merge(TotWF,tmp1,all=TRUE)
+    PctWF =merge(PctWF,tmp2,all=TRUE)
+    
+  }
+  
+  tmp = TotWF[,-1]
+  tmp[is.na(tmp)] = 0
+  TotWF[,-1] = tmp 
+  tmp = PctWF[,-1]
+  tmp[is.na(tmp)] = 0
+  PctWF[,-1] = tmp 
+  
+  TotWF = TotWF 
+  PctWF = PctWF 
+  TotWF[is.na(TotWF[,1]),1] = "NA_Gilles"
+  rownames(TotWF) = rownames(PctWF) = TotWF[,1]
+  TotWF = TotWF[,-1]
+  PctWf = PctWF[,-1]
+}
+
+#  now we need to match bplcountry and countryyear
+cy_to_bplc = c(
+  "Armenia", #   "ARM2011" 
+  "Benin" ,#   "BEN2013" 
+  "Belarus" , #   "BLR2009" 
+  "Brazil" , #   "BRA2010" 
+  "Botswana" , #BWA2011" 
+  "Ecuador" , #   "ECU2010" 
+  "Egypt" , #   "EGY2006" 
+  "Fiji" , #   "FJI2007" 
+  #"France", #   "FRA2006" 
+  "France" ,#   "FRA2011"
+  "Greece" , #   "GRC2011" 
+  #"Ireland" , #   "IRL2006" 
+  "Ireland" , #   "IRL2011" 
+  "Iran" , #   "IRN2006" "
+  "Cambodia", #   "KHM2008" 
+  #"Mexico" , #   "MEX2010" 
+  "Mexico" , #   "MEX2015" 
+  "Mali" , #   "MLI2009" 
+  "Mozambique" , #   "MOZ2007" 
+  "Malawi" , #   "MWI2008"
+  "Panama" , #   "PAN2010" 
+  "Peru" , #   "PER2007" 
+  "Philippines" , #   "PHL2010" 
+  #"Puerto Rico" , #   "PRI2005" 
+  "Puerto Rico" , #   "PRI2010" 
+  "Portugal" , #   "PRT2011" 
+  "Romania" , #   "ROU2011" 
+  "El Salvador", #   "SLV2007" 
+  "Uruguay" , #   "URY2006" 
+  # "United States" , #   "USA2005" 
+  # "United States" , #   "USA2010" 
+  "United States" , #   "USA2015" 
+  "South Africa" , #   "ZAF2007" 
+  "Zambia" , #   "ZMB2010" 
+  "Zimbabwe" #   "ZWE2012"
+  )
+
+## Set "diagonal" values to 0 
+colnames_TotWF_SAVE = TotWF %>% colnames()
+colnames(TotWF) = cy_to_bplc
+
+outward_mig = rep(NA,nrow(TotWF))
+names(outward_mig) =  rownames(TotWF)
+
+for(i in 1:length(outward_mig))
+{
+  ## check if source belongs to list  of destinations 
+  if(rownames(TotWF)[i] %in% colnames(TotWF))
+  {
+  j = which(rownames(TotWF)[i] == colnames(TotWF))
+  outward_mig[i] = sum(TotWF[i,-j])
+  }else
+  {
+    outward_mig[i] = sum(TotWF[i,])
+  }
+}
+
+outward_mig = tibble(country = names(outward_mig),
+                     n=outward_mig)
+outward_mig <- outward_mig %>% arrange(n)
+
+
+tail_outward_mig <- outward_mig[150:200,]
+tail_outward_mig$country = factor(tail_outward_mig$country,
+                                  levels=tail_outward_mig$country )
+
+```
+
+```{r}
+ggplot() + 
+  geom_col(data = tail_outward_mig, 
+           aes(y=country,
+               x=n),
+               #fill = n),
+           width = 0.5, position = position_dodge(0.7)) + 
+  #scale_color_brewer(palette="Dark") + 
+  scale_fill_manual(values=wes_palette(n=4, name="Zissou1")) + 
+ labs(title="Contributions to stocks of migrants in 29 destination countries",
+      subtitle="NB: reflects particular list of  29 destination countries only")
+
+```
+
+# Synoptic view of migration population sizes by country destination and country origin
+
+## All
+
+```{r, message=FALSE}
+cy = "ARM2011"
+sumperwt = sum(dat$perwt[dat$countryyear==cy] )
+TotWF = dat %>% filter(countryyear == cy) %>%
+  group_by(bplcountry) %>%
+  summarise(TotWF = sum(perwt) )
+PctWF = TotWF %>% 
+  mutate(PctWF = 100* TotWF / sumperwt) %>% 
+  select(-TotWF)
+colnames(TotWF)[2] = cy
+colnames(PctWF)[2] = cy
+
+for(i in 2:length(sort(unique(dat$countryyear))) )
+{
+  cy = sort(unique(dat$countryyear))[i]
+  sumperwt = sum(dat$perwt[dat$countryyear==cy] )
+  tmp1 = dat %>% filter(countryyear == cy) %>%
+    group_by(bplcountry) %>%
+    summarise(TotWF = sum(perwt) ) 
+  tmp2 = tmp1 %>%  mutate(PctWF = 100* TotWF / sumperwt) %>% 
+    select(-TotWF)
+  colnames(tmp1)[2] = cy
+  colnames(tmp2)[2] = cy
+  
+  TotWF =merge(TotWF,tmp1,all=TRUE)
+  PctWF =merge(PctWF,tmp2,all=TRUE)
+  
+}
+
+tmp = TotWF[,-1]
+tmp[is.na(tmp)] = 0
+TotWF[,-1] = tmp 
+tmp = PctWF[,-1]
+tmp[is.na(tmp)] = 0
+PctWF[,-1] = tmp 
+TotWF = TotWF %>% as_tibble()
+PctWF = PctWF %>% as_tibble()
+
+PctWF %>%   kable(caption="All",align = "c",digits=1) %>%
+    kable_styling(full_width = F) 
+
+TotWF %>%   kable(caption="All",align = "c",digits=1) %>%
+    kable_styling(full_width = F) 
+```
+
+## Tables by destination
+
+```{r, results='asis' , message=FALSE}
+for(cy in sort(unique(dat$countryyear)) )
+{
+  sumperwt = sum(dat$perwt[dat$countryyear==cy] )
+  dat %>% filter(countryyear == cy) %>%
+    group_by(bplcountry) %>%
+    summarise(TotWF = sum(perwt) ) %>%
+    mutate(PctWF = 100* TotWF / sumperwt) %>%
+    kable(caption=cy,align = "c",digits=1) %>%
+    kable_styling(full_width = F) %>% print()
+  cat('\n\n<!-- -->\n\n')
+}
+```
+
+# Migration as a transfer of financial resource
+
+
+## Analysis for G29 countries under crude assumptions 
+
+In the below, the financial transfer incured by migration of heath workers is evaluated under the following assumptions:
+ 
+* the full training occurs in the country of origin, at the expense of the country of origin
+* the cost of training depends on the job category
+* we do not have data on training cost and we use salaries of health professionals as surrogates for training cost as follows:
+ 
+     + primary + secondary education: 3 years of yearly nurse salary
+     + short  tertiary education: one year of yearly nurse salary
+     + long tertiary education: one year of yearly "professional" salary
+* See code below for detail
+
+
+
+```{r}
+#  counting migrants by job categories
+res = dat %>%   group_by(country,ISCO08WHO_yrstud) %>%
+  summarise(TotWF = sum(perwt),
+            InMigWF_comp = sum(perwt * (mig=="mig")),
+            InMigWF_bplcountry = sum(perwt * mig_bplcountry),
+            regionw.ord = first(regionw.ord))
+
+# merge with costs data 
+res %<>% inner_join(med_cost)
+# financial transfer by job categories
+res %<>% mutate(transf_comp = 
+                       case_when(ISCO08WHO_yrstud == "Short" ~  InMigWF_comp * 3 * Nurses,
+                                 ISCO08WHO_yrstud == "Medium" ~ InMigWF_comp * 4 * Nurses,
+                                 ISCO08WHO_yrstud == "Long" ~   InMigWF_comp * (3 * Nurses  + Professionals)),
+                     transf_bplcountry = 
+                       case_when(ISCO08WHO_yrstud == "Short" ~  InMigWF_bplcountry * 3 *  Nurses,
+                                 ISCO08WHO_yrstud == "Medium" ~ InMigWF_bplcountry * 4 * Nurses,
+                                 ISCO08WHO_yrstud == "Long" ~   InMigWF_bplcountry * (3 * Nurses  + Professionals)))
+# from USD to MUSD
+res %<>% mutate(transf_comp = transf_comp *1e-6 ,
+                     transf_bplcountry =   transf_bplcountry*1e-6 )
+                       
+# summing over yrstud (job categories)
+res %<>% 
+  summarise(TotWF = sum(TotWF , na.rm = TRUE),
+            InMigWF_comp  = sum(InMigWF_comp,na.rm = TRUE),	
+            InMigWF_bplcountry  = sum(InMigWF_bplcountry,na.rm = TRUE),
+            #PctMigWF_comp	 = first(PctMigWF_comp),
+            #PctMigWF_bplcountry  = sum(PctMigWF_bplcountry,na.rm = TRUE), 
+            transf_comp = sum(transf_comp,na.rm = TRUE),
+            transf_bplcountry = sum(transf_bplcountry,na.rm = TRUE))
+
+# merge with GDP data
+res %<>% inner_join(gdp)
+
+```
+
+
+```{r}
+res %<>% arrange(transf_comp)  
+res %<>% mutate(country = factor(country,
+                        levels=country,ordered = TRUE))
+ggplot(res) + 
+  geom_col(aes(y=country,
+               x=transf_comp,
+               fill = "darkred" ),
+  width = 0.5, position = position_dodge(0.7)) + 
+  labs(title="Financial transfer  - Absolute value") + 
+  xlab("millions of USD (NB: non linear scale)") +
+  scale_x_sqrt()+ theme(legend.position = "none")
+```
+
+```{r}
+res %<>% mutate(transf_comp_over_GDP2010_MUSD = 100*transf_comp/ GDP2010_MUSD)  
+res %<>% arrange(transf_comp_over_GDP2010_MUSD)
+res %<>% mutate(country = factor(country,
+                                      levels=country,
+                                      ordered = TRUE))
+ggplot(res) + 
+  geom_col(aes(y=country,
+               x=transf_comp_over_GDP2010_MUSD,
+               fill = "darkred"),
+  width = 0.5, position = position_dodge(0.7)) + 
+   labs(title="Financial transfer - relative to GDP") + 
+  xlab("Percentage of GDP") + theme(legend.position = "none")
+
+```
+
+
+## Accounting for age at migration
+
+In the  previous analysis, we assumed that training takes place in the country of origin. This can be refined when we know the age at migration. This is the case for Brazil, Ecuador, El Salvador, Greece and Puerto Rico.
+
+### Brazil
+
+```{r}
+dat %>% filter(country =="Brazil") %>% 
+  ggplot(aes(y=ISCO08WHO.ord, x=age_imm, fill=country)) + 
+  geom_boxplot() + 
+  xlab("Age at migration") + ylab("")
+```
+
+### Ecuador
+
+```{r}
+dat %>% filter(country =="Ecuador") %>% 
+  ggplot(aes(y=ISCO08WHO.ord, x=age_imm, fill=country)) + 
+  geom_boxplot() + 
+  xlab("Age at migration") + ylab("")
+```
+
+### El Salvador
+
+```{r}
+dat %>% filter(country =="El Salvador") %>% 
+  ggplot(aes(y=ISCO08WHO.ord, x=age_imm, fill=country)) + 
+  geom_boxplot() + 
+  xlab("Age at migration") + ylab("")
+```
+
+### Greece
+
+```{r}
+dat %>% filter(country =="Greece") %>% 
+  ggplot(aes(y=ISCO08WHO.ord, x=age_imm, fill=country)) + 
+  geom_boxplot() + 
+  xlab("Age at migration") + ylab("")
+```
+
+### Puerto Rico
+
+```{r}
+dat %>% filter(country =="Puerto Rico") %>% 
+  ggplot(aes(y=ISCO08WHO.ord, x=age_imm, fill=country)) + 
+  geom_boxplot() + 
+  xlab("Age at migration") + ylab("")
+```
+
+
+__Actually__, we have a lot of missing values for age at migration:
+
+```{r}
+dat %>%  
+  filter(country %in% c("Brazil","Ecuador","El Salvador","Puerto Rico","Greece")) %>%  
+  group_by(country) %>% summarise(mean(is.na(age_imm)),
+                                        mean(is.na(yrimm)),
+                                        mean(is.na(year)),
+                                        mean(is.na(agenum))) %>% 
+  kable() %>% kable_styling()
+```
+
+
+
+__We do not pursue this idea.__
+
+
+# Misc: Global comparison of migrants and non migrants
+
+## Sex
+
+```{r}
+## Sex
+dat %>% group_by(mig,sex) %>% 
+  summarise(n =  sum(perwt) )%>%
+  mutate(freq = 100 * n / sum(n)) %>% 
+  select(-n) %>%  pivot_wider(names_from = mig,values_from = freq) %>% 
+  kable(align = "c",digits=1) %>%  kable_styling(full_width = F)  
+```
+
+## Age
+
+```{r}
+## age.ord
+dat %>% group_by(mig,age2.ord,.drop = FALSE) %>% 
+  summarise(n =  sum(perwt,na.rm = TRUE) )%>%
+  mutate(freq = 100 * n / sum(n ,na.rm=TRUE)) %>% 
+ select(-n) %>%  pivot_wider(names_from = mig,values_from = freq) %>% 
+  kable(align = "c",digits=1) %>%  kable_styling(full_width = F)  
+
+```
+
+## Education
+
+```{r}
+## edattain.ord
+dat %>% group_by(.drop=FALSE,mig,edattain.ord) %>% 
+  summarise(n =  sum(perwt) )%>%
+  mutate(freq = 100 * n / sum(n)) %>% 
+  select(-n) %>%  pivot_wider(names_from = mig,values_from = freq) %>% 
+  kable(align = "c",digits=1) %>%  kable_styling(full_width = F)  
+
+```
+
+## Occupation
+
+```{r}
+## ISCO08WHO.ord
+## NB: I checked that the columns sum up to 100%
+dat %>% group_by(.drop=FALSE,mig,ISCO08WHO.ord) %>% 
+  summarise(n =  sum(perwt) )%>%
+  mutate(freq = 100 * n / sum(n)) %>% 
+  select(-n) %>%  
+  pivot_wider(names_from = mig,values_from = freq) %>% 
+  kable(align = "c",digits=1) %>%  kable_styling(full_width = F)  
+
+```
+
+## Employment status
+
+```{r}
+## empstat.ord
+dat %>% group_by(.drop=FALSE,mig,empstat.ord) %>% 
+  summarise(n =  sum(perwt) )%>%
+  mutate(freq = 100 * n / sum(n)) %>% 
+  select(-n) %>%  
+  pivot_wider(names_from = mig,values_from = freq) %>% 
+  kable(align = "c",digits=1) %>%  kable_styling(full_width = F)  
+
+```
+
+## Employment sector
+
+```{r}
+## empsect.ord
+dat %>% group_by(.drop=FALSE,mig,empsect.ord) %>% 
+  summarise(n =  sum(perwt) )%>%
+  mutate(freq = 100 * n / sum(n)) %>% 
+  select(-n) %>%  
+  pivot_wider(names_from = mig,values_from = freq) %>% 
+  kable(align = "c",digits=1) %>%  kable_styling(full_width = F)  
+
+```
+
+## Residence
+
+```{r}
+## urban
+dat %>% group_by(.drop=FALSE,mig,urban) %>% 
+  summarise(n =  sum(perwt) )%>%
+  mutate(freq = 100 * n / sum(n)) %>% 
+  select(-n) %>%
+  pivot_wider(names_from = mig,values_from = freq) %>%
+  kable(align = "c",digits=1) %>%  kable_styling(full_width = F)  
+
+```
+
+## Working hours
+
+```{r}
+ggplot(dat, aes(x=hrsmain.num,col=mig, fill=mig)) +
+    geom_histogram(aes(y=..density..), position="identity", alpha=0.5)+
+   # geom_density(alpha=0.6)+
+  facet_grid(mig ~ .)
+
+```
+
+## Income
+
+The histogram of income for migrants is shifted to the right.
+
+```{r}
+ggplot(dat, aes(x=incearn.clean,fill=mig)) +
+  geom_histogram(aes(y=..density..), position="identity", alpha=0.5)+
+ # geom_density(alpha=0.6)+
+   xlim(0,200000) +
+  facet_grid(mig ~ .)
+
+```
+
+# APPENDIX: Data formatting
+
+This is shown at the end but obviously executed prior to the above analysis.
+
+```{r, code = readLines("Format.R"), eval=FALSE}
+```
+
+# APPENDIX: remarks and questions on data
+
+## Aspects of the dataset
+
+In the initial dataset, some countries are documented through more than one census, in that cases, we kept only the last census. After this initial filtering. we have `r  length(unique(dat$countryyear))` countries:
+
+```{r}
+dat %>%  select(regionw.ord,country) %>% unique() %>% arrange(regionw.ord) %>% 
+  kable() %>%  kable_styling()
+
+```
+
+## Raw variables informative about migration and a new composite one
+
+There are at least four variables informative about migration history: `bplcountry, nation, nativity` and `citizen`. All have missing entries (from 10% to over 75%). We could define a composite migration variable `mig` by combining our four variables with logical OR as
+
+```{r,eval=FALSE}
+mig =  (country != bplcountry) | (country != nation) | (nativity == "Foreign-born") | 
+  ( citizen == "Not a citizen" |  citizen == "Naturalized citizen" ))
+
+```
+
+This would result in a variable `mig` with a lot of NAs.
+
+Instead we use a *twisted logical OR* or a *Bayesian OR* defined as:
+
+```{r , eval=FALSE}
+`%altOR%` = function(x,y)
+{
+  case_when( (!is.na(x) & !is.na(y) ) | (is.na(x) & is.na(y) ) ~ x|y,
+            is.na(x) ~ y,
+            is.na(y) ~ x)
+  ## T,T -> T
+  ## T,NA -> T
+  ## F,NA -> F
+  ## NA,NA- > NA
+  ## whenever an info is avail, it is picked
+  ## this contrasts with the standard logical OR | : F,A -> NA
+}
+```
+
+and define a composite migration variable as
+
+```{r,eval=FALSE}
+mig =  mig_bplcountry  %altOR% mig_nation %altOR% mig_fgnborn  %altOR% mig_citizen
+```
+
+In terms of missingness, we get:
+
+```{r}
+sumperwt = sum(dat$perwt)
+
+dat %>% group_by(mig_bplcountry) %>% summarise(TotWF = sum(perwt) ) %>% 
+  mutate( PctWF = 100 * TotWF / sumperwt ) %>% kable(align = "c",digits=1) %>% 
+     kable_styling(full_width = F)  
+
+dat %>% group_by(mig_citizen) %>% summarise(TotWF = sum(perwt) ) %>% 
+  mutate( PctWF = 100 * TotWF / sumperwt ) %>% kable(align = "c",digits=1) %>% 
+     kable_styling(full_width = F)  
+
+dat %>% group_by(mig_fgnborn) %>% summarise(TotWF = sum(perwt) ) %>% 
+  mutate( PctWF = 100 * TotWF / sumperwt ) %>% kable(align = "c",digits=1) %>% 
+     kable_styling(full_width = F)  
+
+dat %>% group_by(mig_nation) %>% summarise(TotWF = sum(perwt) ) %>% 
+  mutate( PctWF = 100 * TotWF / sumperwt ) %>% kable(align = "c",digits=1) %>% 
+     kable_styling(full_width = F)  
+
+dat %>% group_by(mig) %>% summarise(TotWF = sum(perwt) ) %>% 
+  mutate( PctWF = 100 * TotWF / sumperwt ) %>% kable(align = "c",digits=1) %>% 
+     kable_styling(full_width = F)  
+
+```
+
+With this composite variable, a person defined as migrant is not necessarily born outside the host country, as shown below:
+
+```{r}
+# looking for "mig" migrants born in destination country
+dat %>% group_by(country) %>% filter(mig=="mig") %>% filter(bplcountry==country) %>% 
+  summarize(n=n(),perwt=sum(perwt)) %>%  kable(align = "c",digits=1) %>%
+  kable_styling(full_width = F) 
+```
+
+## Misc. Qs
+
+```{r}
+a = sort(unique(dat$nation))
+b = sort(unique(dat$country))
+c = sort(unique(dat$bplcountry))
+
+
+subs = b %in% a
+## countries with... BTW WHAT IS nation ???
+b[!subs]
+
+##  countries with no WF born in the country
+subs = b %in% c
+b[!subs]
+```
+
+# APPENDIX: misc material on inward migration population sizes by country
+
+## Table
+
+```{r}
+##  composite
+res0 = dat %>%   group_by(countryyear) %>%
+  summarise(TotWF = sum(perwt),
+            InMigWF_comp = sum(perwt * (mig=="mig"))) %>%
+  mutate(PctMigWF_comp = 100*InMigWF_comp/TotWF) 
+
+## country
+res1 = dat %>%   group_by(countryyear,bplcountry) %>%
+  summarise(WF = sum(perwt),country=first(country) ) %>%
+  mutate(TotWF = sum(WF)) %>%
+  mutate(PctWF = 100*WF/TotWF) %>%
+  mutate(InMigWF = case_when(country == bplcountry ~ 0,
+                             country != bplcountry ~ WF)) %>%
+  summarise(TotWF=first(TotWF) , TotInMigWF_bplcountry = sum(InMigWF))  %>%
+  mutate(PctInMigWF_bplcountry = 100*TotInMigWF_bplcountry / TotWF) 
+
+## nation
+res2 = dat %>%   group_by(countryyear,nation) %>%
+  summarise(WF = sum(perwt),country=first(country) ) %>%
+  mutate(TotWF = sum(WF)) %>%
+  mutate(PctWF = 100*WF/TotWF) %>%
+  mutate(InMigWF_nation = case_when(country == nation ~ 0,
+                             country != nation ~ WF)) %>%
+  summarise(TotWF=first(TotWF) , TotInMigWF_nation = sum(InMigWF_nation)) %>%
+  mutate(PctInMigWF_nation = 100*TotInMigWF_nation / TotWF)
+
+## nativity
+res3 = dat %>%   group_by(countryyear,nativity) %>%
+  summarise(WF = sum(perwt),country=first(country) ) %>%
+  mutate(TotWF = sum(WF)) %>%
+  mutate(PctWF = 100*WF/TotWF) %>%
+  mutate(InMigWF_nativity = case_when(nativity != "Foreign-born" ~ 0,
+                                      nativity == "Foreign-born" ~ WF)) %>%
+  summarise(TotWF=first(TotWF) , TotInMigWF_nativity = sum(InMigWF_nativity)) %>%
+  mutate(PctInMigWF_nativity = 100*TotInMigWF_nativity / TotWF)
+
+## citizen
+res4 = dat %>%   group_by(countryyear,citizen) %>%
+  summarise(WF = sum(perwt),country=first(country) ) %>%
+  mutate(TotWF = sum(WF)) %>%
+  mutate(PctWF = 100*WF/TotWF) %>%
+  mutate(InMigWF_citizen = case_when(!(citizen == "Not a citizen" 
+                                       | citizen == "Naturalized citizen") ~ 0,
+                                     citizen == "Not a citizen" 
+                                     | citizen == "Naturalized citizen" ~ WF)) %>%
+  summarise(TotWF=first(TotWF) , TotInMigWF_citizen = sum(InMigWF_citizen)) %>%
+  mutate(PctInMigWF_citizen = 100*TotInMigWF_citizen / TotWF)
+
+# res = res1 %>%  full_join(res2,by=c("countryyear","TotWF")) %>% 
+#  full_join(res3, by=c("countryyear","TotWF")) %>% full_join(res4, by=c("countryyear","TotWF"))
+res <- bind_cols(res0, 
+                 select(res1,-c("countryyear","TotWF")),
+                 select(res2,-c("countryyear","TotWF")),
+                 select(res3,-c("countryyear","TotWF")),
+                 select(res4,-c("countryyear","TotWF")))
+res <- as_tibble(res)
+
+
+
+
+res <- res %>% mutate(year=as.numeric(str_extract(countryyear, "[0-9]+")))
+res %>% kable(caption="Inward migration population size",align = "c",digits=1) %>% 
+     kable_styling(full_width = F)  
+```
+
+## Congruence of the various procedures to identify migrants
+
+```{r}
+res_Pct <- res %>% select(starts_with("Pct"))  
+pairs(res_Pct,col="firebrick2",pch=16,cex=1.5)
+```
+
+## Relative inward migration population sizes by country destination
+
+```{r}
+mycol = terrain.colors(12)
+res_long <- res %>% 
+  select(countryyear , starts_with("Pct") ) %>% 
+  melt(id.vars = "countryyear")
+ggplot() + 
+  geom_col(data = res_long, 
+           aes(y=countryyear,
+               x=value, 
+               fill = variable),
+           width = 0.5, position = position_dodge(0.7)) + 
+  #scale_color_brewer(palette="Dark") + 
+  scale_fill_manual(values=wes_palette(n=5, name="Zissou1")) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1,
+                                   colour = mycol[match(res$year,sort(unique(res$year)))])) 
+```
+
+## Absolute inward migration population sizes by country destination
+
+```{r,message=FALSE }
+mycol = terrain.colors(12)
+res_long <- res %>% 
+select(countryyear , starts_with("TotIn") ) %>% 
+  melt(id.vars = "countryyear")
+ggplot() + 
+  geom_col(data = res_long, 
+           aes(y=countryyear,
+               x=value, 
+               fill = variable),
+           width = 0.5, position = position_dodge(0.7)) + 
+  scale_x_sqrt() + 
+  #scale_color_brewer(palette="Dark") + 
+  scale_fill_manual(values=wes_palette(n=5, name="Zissou1")) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1,
+                                   colour = mycol[match(res$year,sort(unique(res$year)))])) 
+```
